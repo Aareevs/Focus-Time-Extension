@@ -16,27 +16,41 @@ async function generateAndSetActionIcon() {
     if (typeof OffscreenCanvas === 'undefined') return;
     const sizes = [128, 48, 16];
     const imageData = {};
+    // Theme colors: green button color and dark background
+    const GREEN = '#10b981'; // matches --btn in options.css
+    const DARK = '#0b1220';
+
     for (const size of sizes) {
       const canvas = new OffscreenCanvas(size, size);
       const ctx = canvas.getContext('2d');
-      // background (transparent -> draw colored circle)
       ctx.clearRect(0, 0, size, size);
-      // circle background
-      ctx.fillStyle = '#f97316'; // orange
+
+      // draw a green circular background
+      ctx.fillStyle = GREEN;
       ctx.beginPath();
-      ctx.arc(size / 2, size / 2, Math.floor(size * 0.42), 0, Math.PI * 2);
+      ctx.arc(size / 2, size / 2, Math.floor(size * 0.46), 0, Math.PI * 2);
       ctx.fill();
-      // draw white Z letter
-      ctx.fillStyle = '#ffffff';
-      // choose font size relative to canvas
-      const fontSize = Math.floor(size * 0.6);
-      ctx.font = `${fontSize}px -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial`;
+
+      // subtle inner shadow / ring for legibility
+      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+      ctx.lineWidth = Math.max(1, Math.floor(size * 0.04));
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, Math.floor(size * 0.36), 0, Math.PI * 2);
+      ctx.stroke();
+
+      // draw dark 'Z' letter centered
+      ctx.fillStyle = DARK;
+      const fontSize = Math.floor(size * 0.62);
+      // use bold system font for clarity at small sizes
+      ctx.font = `bold ${fontSize}px -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      // slight vertical tweak for optical centering
-      ctx.fillText('Z', size / 2, size / 2 + Math.round(size * 0.02));
+      // optical vertical nudge
+      ctx.fillText('Z', size / 2, size / 2 + Math.round(size * 0.01));
+
       imageData[size] = ctx.getImageData(0, 0, size, size);
     }
+
     await chrome.action.setIcon({ imageData });
   } catch (e) {
     console.warn('generateAndSetActionIcon failed', e);

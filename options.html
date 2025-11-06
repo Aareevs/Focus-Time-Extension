@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>FocusMate Options</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #0b1220;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --input: #111827;
+        --border: #1f2937;
+        --btn: #10b981;
+        --btnh: #059669;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .card {
+        width: 100%;
+        max-width: 560px;
+        background: var(--input);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 20px 16px;
+        box-shadow: 0 12px 30px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+      }
+      h1 {
+        margin: 0 0 10px;
+      }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 10px;
+        background: var(--input);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-sizing: border-box; /* prevents overflow touching card edge */
+      }
+      input::placeholder {
+        color: var(--muted);
+      }
+      button {
+        margin-top: 12px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: none;
+        background: var(--btn);
+        color: #06281a;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      button:hover {
+        background: var(--btnh);
+      }
+
+      /* Action row for buttons + status */
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .actions #status {
+        margin-left: auto;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      /* Small row layout */
+      .row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+
+      /* Toggle switch */
+      .toggle {
+        width: 44px; height: 24px; background: #233048; border: 1px solid var(--border);
+        border-radius: 999px; position: relative; cursor: pointer; transition: background .2s ease;
+        outline: none; display: inline-flex; align-items: center;
+      }
+      .toggle .knob {
+        width: 18px; height: 18px; background: #fff; border-radius: 999px; position: absolute; left: 3px;
+        transition: transform .2s ease; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+      }
+      .toggle.on { background: #059669; border-color: #059669; }
+      .toggle.on .knob { transform: translateX(20px); }
+      .toggle:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+      .toggle-label { color: var(--muted); font-size: 13px; }
+    </style>
+
+    <script defer src="options.js"></script>
+  </head>
+  <body>
+    <div class="card">
+      <h1>FocusMate Settings</h1>
+      <label for="api-key">Google Gemini API Key:</label>
+      <input id="api-key" type="password" placeholder="Paste your API key" />
+      <div class="row">
+        <div id="toggle-visibility" class="toggle" role="switch" aria-checked="false" tabindex="0">
+          <span class="knob"></span>
+        </div>
+        <span id="toggle-label" class="toggle-label">Show key</span>
+      </div>
+      <div class="actions">
+        <button id="save">Save</button>
+        <button
+          id="clear"
+          style="margin-left: 8px; background: #ef4444; color: #fff"
+        >
+          Clear
+        </button>
+        <span id="status"></span>
+      </div>
+    </div>
+  </body>
+</html>

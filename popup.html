@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI Focus Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="toprow">
+        <div id="zen-toggle" class="title" role="button" tabindex="0">ZEN MODE</div>
+      </div>
+      <div class="subtitle">STAY FOCUSED</div>
+    </header>
+
+    <main class="container">
+      <div id="content" class="collapsible">
+        <nav class="tabs" role="tablist" aria-label="Focus sections">
+          <button class="tab active" data-target="panel-timer" role="tab" aria-selected="true">Timer</button>
+          <button class="tab" data-target="panel-topics" role="tab" aria-selected="false">Topics</button>
+          <button class="tab" data-target="panel-blocked" role="tab" aria-selected="false">Blocked</button>
+          <button class="tab" data-target="panel-pomodoro" role="tab" aria-selected="false">Pomodoro</button>
+        </nav>
+
+        <section id="panel-timer" class="panel card active" aria-labelledby="tab-timer">
+          <div id="timer" class="timer">00:00:00</div>
+          <div class="btn-row">
+            <button id="start-pause" class="btn">Start</button>
+            <button id="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </section>
+
+        <section id="panel-topics" class="panel card" aria-labelledby="tab-topics">
+          <h3>What are you working on?</h3>
+          <div class="inline">
+            <input id="topic-input" class="input" placeholder="e.g., Learning React, Building an app" />
+            <button id="add-topic" class="btn">Add</button>
+          </div>
+          <section class="section" style="margin-top:10px;">
+            <h3>Focus Topics:</h3>
+            <ul id="topics-list" class="list"></ul>
+          </section>
+        </section>
+
+        <section id="panel-blocked" class="panel card" aria-labelledby="tab-blocked">
+          <h3>Add site Manually to block:</h3>
+          <div class="inline">
+            <input id="manual-block" class="input" placeholder="e.g., youtube.com, facebook.com" />
+            <button id="block-site" class="btn">Block Site</button>
+          </div>
+          <div class="inline" style="margin-top:8px;">
+            <button id="block-current" class="btn btn-secondary">Block this site</button>
+          </div>
+          <section class="section" style="margin-top:10px;">
+            <h3>Blocked Sites:</h3>
+            <ul id="blocked-list" class="list"></ul>
+          </section>
+        </section>
+
+        <section id="panel-pomodoro" class="panel card" aria-labelledby="tab-pomodoro">
+          <h3>Pomodoro</h3>
+          <div id="pomo-timer" class="timer" style="margin-top:8px;">25:00</div>
+          <div class="inline">
+            <input id="pomo-work" class="input" placeholder="Work min (25)" />
+            <input id="pomo-break" class="input" placeholder="Break min (5)" />
+          </div>
+          <div class="btn-row">
+            <button id="pomo-start-pause" class="btn">Start</button>
+            <button id="pomo-reset" class="btn btn-secondary">Reset</button>
+          </div>
+          <div class="timer-text" style="margin-top:6px; opacity:.8;">Cycles: <span id="pomo-cycles">0</span> • <span id="pomo-phase">Work</span></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <button id="open-settings-footer" class="icon" title="Open settings" aria-label="Settings">Settings</button>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+  </html>

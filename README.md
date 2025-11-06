@@ -1,4 +1,4 @@
-# FocusMate — Focus Timer & Topic Blocker
+# ZEN MODE — Focus Timer & Topic Blocker
 
 A Manifest V3 Chrome extension to help you focus with a lightweight timer, a topic-based blocker powered by Google Gemini, and a custom blocklist.
 

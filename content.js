@@ -1,5 +1,5 @@
 // Content script: relays window messages to background
-console.log('FocusMate content script active');
+console.log('ZEN MODE content script active');
 
 window.addEventListener('message', (event) => {
 	// Only accept messages from the same window context

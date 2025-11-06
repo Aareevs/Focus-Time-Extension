@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "FocusMate — Focus Timer & Topic Blocker",
+  "name": "ZEN MODE",
   "version": "1.3",
-  "description": "Helps you focus: timer, topic-based blocking using Google Gemini, and custom blocklist.",
+  "description": "Helps you focus: timer, topic-based blocking using Google Gemini, and a custom blocklist.",
   "permissions": ["storage", "tabs", "activeTab", "scripting", "webNavigation"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
@@ -15,7 +15,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "FocusMate"
+    "default_title": "ZEN MODE"
   },
   "options_page": "options.html",
   "icons": {

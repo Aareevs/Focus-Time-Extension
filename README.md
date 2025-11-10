@@ -2,6 +2,8 @@
 
 A modern Manifest Microsoft Edge extension to help you stay focused with screen time tracking, topic-based blocking powered by Google Gemini, and a custom blocklist with recommended sites.
 
+**Credits To Sirwagya Shekhar(@Sirwagya) for providing layout and baseline**
+
 ## Features
 - **Modern Dark UI** with glass-morphism effects and vibrant gradients
 - **Screen Time Tracker** with real-time monitoring and daily statistics

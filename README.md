@@ -1,6 +1,6 @@
 # Focus Time — Screen Time Tracker & Topic Blocker
 
-A modern Manifest V3 Chrome extension to help you stay focused with screen time tracking, topic-based blocking powered by Google Gemini, and a custom blocklist with recommended sites.
+A modern Manifest Microsoft Edge extension to help you stay focused with screen time tracking, topic-based blocking powered by Google Gemini, and a custom blocklist with recommended sites.
 
 ## Features
 - **Modern Dark UI** with glass-morphism effects and vibrant gradients
@@ -33,7 +33,7 @@ A modern Manifest V3 Chrome extension to help you stay focused with screen time 
 
 ## Technical Details
 - Built with Manifest V3 for modern Chrome compatibility
-- Uses `chrome.scripting` and `chrome.webNavigation` APIs
+- Uses `edge.scripting` and `edge.webNavigation` APIs
 - Content script injection for overlay functionality
 - Local storage for settings and blocklist management
 - No external data collection beyond Gemini API calls
@@ -44,6 +44,6 @@ A modern Manifest V3 Chrome extension to help you stay focused with screen time 
 - No tracking or analytics implemented
 
 ## Troubleshooting
-- **Blocking not working?** Check extension permissions in `chrome://extensions` > Details > Site access
+- **Blocking not working?** Check extension permissions in `edge://extensions` > Details > Site access
 - **Badge codes**: BLK = Blocked by list, IRR = Irrelevant to topic
 - **Extension not loading?** Ensure all files are present and manifest.json is valid

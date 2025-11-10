@@ -11,11 +11,11 @@ A modern Manifest V3 Chrome extension to help you stay focused with screen time 
 - **Temporary Allowlist** with 5-minute per-domain access
 - **Visual Feedback** through extension icon badges (BLK/IRR)
 
-## Installation (Chrome)
-1. Go to `chrome://extensions`
+## Installation (Edge)
+1. Go to `edge://extensions`
 2. Enable Developer mode (top-right toggle)
 3. Click "Load unpacked" and select this folder
-4. The extension icon will appear in your Chrome toolbar
+4. The extension icon will appear in your Edge toolbar
 
 ## Setup
 1. **Optional AI Setup**: Open the options page (right-click extension icon > Options) and paste your Google Gemini API key for intelligent topic-based blocking

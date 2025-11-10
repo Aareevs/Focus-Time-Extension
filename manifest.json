@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ZEN MODE",
+  "name": "Focus Time",
   "version": "1.3",
   "description": "Helps you focus: timer, topic-based blocking using Google Gemini, and a custom blocklist.",
   "permissions": ["storage", "tabs", "activeTab", "scripting", "webNavigation"],
@@ -15,18 +15,18 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "ZEN MODE",
+    "default_title": "Focus Time",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/icon16.svg",
+      "48": "icons/icon48.svg",
+      "128": "icons/icon128.svg"
     }
   },
   "options_page": "options.html",
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/icon16.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
   },
   "web_accessible_resources": []
 }

@@ -2,16 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-  <title>ZEN MODE</title>
+  <title>Focus Time</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <header class="header">
       <div class="toprow">
-        <div id="zen-toggle" class="title" role="button" tabindex="0">ZEN MODE</div>
+        <div id="focus-toggle" class="title" role="button" tabindex="0">Focus Time</div>
       </div>
-      <div class="subtitle">STAY FOCUSED</div>
+      <div class="subtitle">TIME TO FOCUS AND CONCENTRATE ON YOUR GOALS</div>
     </header>
 
     <main class="container">
@@ -20,7 +20,7 @@
           <button class="tab active" data-target="panel-timer" role="tab" aria-selected="true">Timer</button>
           <button class="tab" data-target="panel-topics" role="tab" aria-selected="false">Topics</button>
           <button class="tab" data-target="panel-blocked" role="tab" aria-selected="false">Blocked</button>
-          <button class="tab" data-target="panel-pomodoro" role="tab" aria-selected="false">Pomodoro</button>
+          <button class="tab" data-target="panel-screentime" role="tab" aria-selected="false">Screen Time</button>
         </nav>
 
         <section id="panel-timer" class="panel card active" aria-labelledby="tab-timer">
@@ -53,23 +53,31 @@
             <button id="block-current" class="btn btn-secondary">Block this site</button>
           </div>
           <section class="section" style="margin-top:10px;">
+            <h3>Recommended Sites to Block:</h3>
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 8px;">Click to add these common distracting sites</div>
+            <div id="recommended-sites" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+              <button class="btn btn-secondary" data-site="youtube.com" style="font-size: 11px; padding: 4px 8px; min-width: auto; height: auto;">YouTube</button>
+              <button class="btn btn-secondary" data-site="instagram.com" style="font-size: 11px; padding: 4px 8px; min-width: auto; height: auto;">Instagram</button>
+              <button class="btn btn-secondary" data-site="netmirror.app" style="font-size: 11px; padding: 4px 8px; min-width: auto; height: auto;">NetMirror</button>
+            </div>
+          </section>
+          <section class="section" style="margin-top:10px;">
             <h3>Blocked Sites:</h3>
             <ul id="blocked-list" class="list"></ul>
           </section>
         </section>
 
-        <section id="panel-pomodoro" class="panel card" aria-labelledby="tab-pomodoro">
-          <h3>Pomodoro</h3>
-          <div id="pomo-timer" class="timer" style="margin-top:8px;">25:00</div>
-          <div class="inline">
-            <input id="pomo-work" class="input" placeholder="Work min (25)" />
-            <input id="pomo-break" class="input" placeholder="Break min (5)" />
-          </div>
+        <section id="panel-screentime" class="panel card" aria-labelledby="tab-screentime">
+          <h3>Screen Time</h3>
+          <div id="current-site" class="timer" style="margin-top:8px; font-size: 14px;">Current: Loading...</div>
+          <div id="site-time" class="timer" style="margin-top:4px;">00:00:00</div>
           <div class="btn-row">
-            <button id="pomo-start-pause" class="btn">Start</button>
-            <button id="pomo-reset" class="btn btn-secondary">Reset</button>
+            <button id="reset-site-time" class="btn btn-secondary">Reset Time</button>
           </div>
-          <div class="timer-text" style="margin-top:6px; opacity:.8;">Cycles: <span id="pomo-cycles">0</span> • <span id="pomo-phase">Work</span></div>
+          <section class="section" style="margin-top:10px;">
+            <h3>Today's Usage:</h3>
+            <ul id="usage-list" class="list"></ul>
+          </section>
         </section>
       </div>
     </main>

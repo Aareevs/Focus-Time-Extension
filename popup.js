@@ -84,8 +84,8 @@ if (settingsBtn) settingsBtn.addEventListener('click', openOptions);
 const settingsFooterBtn = document.getElementById('open-settings-footer');
 if (settingsFooterBtn) settingsFooterBtn.addEventListener('click', openOptions);
 
-// Zen Mode toggle (true => blocking ON, break_mode=false)
-const zenToggle = document.getElementById('zen-toggle');
+// Focus Mode toggle (true => blocking ON, break_mode=false)
+const focusToggle = document.getElementById('focus-toggle');
 const content = document.getElementById('content');
 const tabs = document.querySelectorAll('.tab');
 const panels = document.querySelectorAll('.panel');
@@ -144,93 +144,161 @@ const topicsListEl = document.getElementById('topics-list');
 
 const TOPICS_KEY = 'focusmate_topics';
 
-// Pomodoro elements
-const pomoWorkInput = document.getElementById('pomo-work');
-const pomoBreakInput = document.getElementById('pomo-break');
-const pomoTimerEl = document.getElementById('pomo-timer');
-const pomoStartPauseBtn = document.getElementById('pomo-start-pause');
-const pomoResetBtn = document.getElementById('pomo-reset');
-const pomoCyclesEl = document.getElementById('pomo-cycles');
-const pomoPhaseEl = document.getElementById('pomo-phase');
+// Screen Time elements
+const currentSiteEl = document.getElementById('current-site');
+const siteTimeEl = document.getElementById('site-time');
+const resetSiteTimeBtn = document.getElementById('reset-site-time');
+const usageListEl = document.getElementById('usage-list');
 
-let pomoRunning = false;
-let pomoInterval = null;
-let pomoPhase = 'Work'; // 'Work' | 'Break'
-let pomoSecondsLeft = 25 * 60;
-let pomoCycles = 0;
+let screenTimeInterval = null;
+let currentHostname = '';
+let siteStartTime = Date.now();
 
-function intBetween(v, min, max, fallback) {
-  const n = parseInt(v, 10);
-  if (Number.isFinite(n)) return Math.min(max, Math.max(min, n));
-  return fallback;
+// Screen Time functionality
+function formatTime(seconds) {
+  const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
 }
 
-function fmtMMSS(totalSeconds) {
-  const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-  const s = String(totalSeconds % 60).padStart(2, '0');
-  return `${m}:${s}`;
-}
-
-function updatePomoUI() {
-  if (pomoTimerEl) pomoTimerEl.textContent = fmtMMSS(pomoSecondsLeft);
-  if (pomoCyclesEl) pomoCyclesEl.textContent = String(pomoCycles);
-  if (pomoPhaseEl) pomoPhaseEl.textContent = pomoPhase;
-  if (pomoTimerEl) {
-    pomoTimerEl.classList.toggle('running', pomoRunning);
-    pomoTimerEl.classList.toggle('paused', !pomoRunning);
+async function getCurrentTabHostname() {
+  try {
+    const tabs = await new Promise(resolve => chrome.tabs.query({ active: true, currentWindow: true }, resolve));
+    const tab = Array.isArray(tabs) ? tabs[0] : tabs;
+    if (tab?.url) {
+      try {
+        const url = new URL(tab.url);
+        return url.hostname.replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to get current tab:', e);
   }
+  return '';
 }
 
-function updatePomoStartPauseUI() {
-  if (!pomoStartPauseBtn) return;
-  pomoStartPauseBtn.textContent = pomoRunning ? 'Pause' : 'Start';
-}
-
-function setPomoPhase(nextPhase) {
-  pomoPhase = nextPhase;
-  const workMin = intBetween(pomoWorkInput?.value || 25, 1, 180, 25);
-  const breakMin = intBetween(pomoBreakInput?.value || 5, 1, 60, 5);
-  pomoSecondsLeft = (nextPhase === 'Work' ? workMin : breakMin) * 60;
-  updatePomoUI();
-}
-
-function tickPomodoro() {
-  if (!pomoRunning) return;
-  pomoSecondsLeft -= 1;
-  if (pomoSecondsLeft <= 0) {
-    if (pomoPhase === 'Work') {
-      pomoCycles += 1;
-      setPomoPhase('Break');
-    } else {
-      setPomoPhase('Work');
+async function updateScreenTime() {
+  const hostname = await getCurrentTabHostname();
+  
+  if (hostname !== currentHostname) {
+    // Save time for previous site
+    if (currentHostname) {
+      const timeSpent = Math.floor((Date.now() - siteStartTime) / 1000);
+      await saveSiteTime(currentHostname, timeSpent);
+    }
+    
+    // Reset for new site
+    currentHostname = hostname;
+    siteStartTime = Date.now();
+    
+    if (currentSiteEl) {
+      currentSiteEl.textContent = hostname ? `Current: ${hostname}` : 'Current: None';
     }
   }
-  updatePomoUI();
+  
+  // Update current site timer
+  if (hostname && siteTimeEl) {
+    const currentTime = Math.floor((Date.now() - siteStartTime) / 1000);
+    siteTimeEl.textContent = formatTime(currentTime);
+  }
+  
+  // Update usage list
+  await updateUsageList();
 }
 
-function startPomodoro() {
-  if (pomoRunning) return;
-  pomoRunning = true;
-  if (!pomoInterval) pomoInterval = setInterval(tickPomodoro, 1000);
-  updatePomoUI();
-  updatePomoStartPauseUI();
+async function saveSiteTime(hostname, seconds) {
+  if (!hostname || seconds <= 0) return;
+  
+  const key = `screentime_${hostname}`;
+  const data = await storageGet([key]);
+  const existing = data[key] || 0;
+  await storageSet({ [key]: existing + seconds });
 }
 
-function pausePomodoro() {
-  if (!pomoRunning) return;
-  pomoRunning = false;
-  updatePomoUI();
-  updatePomoStartPauseUI();
+async function getSiteTime(hostname) {
+  if (!hostname) return 0;
+  const key = `screentime_${hostname}`;
+  const data = await storageGet([key]);
+  return data[key] || 0;
 }
 
-function resetPomodoro() {
-  pomoRunning = false;
-  clearInterval(pomoInterval);
-  pomoInterval = setInterval(tickPomodoro, 1000); // keep interval for immediate start later
-  pomoCycles = 0;
-  setPomoPhase('Work');
-  updatePomoUI();
-  updatePomoStartPauseUI();
+async function resetSiteTime(hostname) {
+  if (!hostname) return;
+  const key = `screentime_${hostname}`;
+  await storageSet({ [key]: 0 });
+}
+
+async function updateUsageList() {
+  if (!usageListEl) return;
+  
+  // Get all screen time data
+  const data = await storageGet(null);
+  const usage = [];
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (key.startsWith('screentime_') && value > 0) {
+      const hostname = key.replace('screentime_', '');
+      usage.push({ hostname, time: value });
+    }
+  }
+  
+  // Sort by time spent (descending)
+  usage.sort((a, b) => b.time - a.time);
+  
+  // Display top 5 sites
+  usageListEl.innerHTML = '';
+  const displayCount = Math.min(5, usage.length);
+  
+  for (let i = 0; i < displayCount; i++) {
+    const { hostname, time } = usage[i];
+    const li = document.createElement('li');
+    li.style.display = 'flex';
+    li.style.justifyContent = 'space-between';
+    li.style.alignItems = 'center';
+    li.style.padding = '4px 0';
+    
+    const siteSpan = document.createElement('span');
+    siteSpan.textContent = hostname;
+    siteSpan.style.fontSize = '12px';
+    siteSpan.style.color = 'var(--text)';
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.textContent = formatTime(time);
+    timeSpan.style.fontSize = '11px';
+    timeSpan.style.color = 'var(--muted)';
+    timeSpan.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+    
+    li.appendChild(siteSpan);
+    li.appendChild(timeSpan);
+    usageListEl.appendChild(li);
+  }
+  
+  if (usage.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = 'No usage data yet';
+    li.style.color = 'var(--muted)';
+    li.style.fontSize = '12px';
+    li.style.textAlign = 'center';
+    li.style.padding = '8px 0';
+    usageListEl.appendChild(li);
+  }
+}
+
+// Reset current site time
+if (resetSiteTimeBtn) {
+  resetSiteTimeBtn.addEventListener('click', async () => {
+    if (currentHostname) {
+      await resetSiteTime(currentHostname);
+      siteStartTime = Date.now();
+      if (siteTimeEl) {
+        siteTimeEl.textContent = '00:00:00';
+      }
+      await updateUsageList();
+    }
+  });
 }
 
 function normalizeDomain(s) {
@@ -265,6 +333,54 @@ function renderBlocked(list) {
     li.appendChild(span);
     li.appendChild(removeBtn);
     blockedListEl.appendChild(li);
+  });
+}
+
+// Add functionality for recommended sites buttons
+function addRecommendedSite(site) {
+  return async function() {
+    const { focusmate_blocklist = [] } = await storageGet('focusmate_blocklist');
+    const set = new Set(focusmate_blocklist);
+    set.add(site);
+    const next = Array.from(set);
+    await storageSet({ focusmate_blocklist: next });
+    renderBlocked(next);
+  };
+}
+
+// Add event listeners for recommended sites buttons
+function setupRecommendedSites() {
+  const recommendedContainer = document.getElementById('recommended-sites');
+  if (!recommendedContainer) return;
+
+  // Use event delegation for the recommended sites container
+  recommendedContainer.addEventListener('click', async function(e) {
+    if (e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-site')) {
+      const site = e.target.getAttribute('data-site');
+      const { focusmate_blocklist = [] } = await storageGet('focusmate_blocklist');
+      const set = new Set(focusmate_blocklist);
+      
+      if (!set.has(site)) {
+        set.add(site);
+        const next = Array.from(set);
+        await storageSet({ focusmate_blocklist: next });
+        renderBlocked(next);
+        
+        // Add visual feedback
+        e.target.style.background = 'var(--accent)';
+        e.target.style.color = 'white';
+        e.target.style.borderColor = 'var(--accent)';
+        e.target.textContent = '✓ ' + e.target.textContent;
+        
+        // Revert after 1.5 seconds
+        setTimeout(() => {
+          e.target.style.background = '';
+          e.target.style.color = '';
+          e.target.style.borderColor = '';
+          e.target.textContent = e.target.textContent.replace('✓ ', '');
+        }, 1500);
+      }
+    }
   });
 }
 
@@ -361,40 +477,30 @@ if (blockCurrentBtn) {
   });
 }
 
-async function setZenMode(isOn) {
+async function setFocusMode(isOn) {
   await storageSet({ focusmate_break_mode: !isOn });
   applyContentVisibility(isOn);
-  if (zenToggle) {
-    zenToggle.classList.toggle('on', isOn);
+  if (focusToggle) {
+    focusToggle.classList.toggle('on', isOn);
   }
 }
 
-if (zenToggle) {
-  zenToggle.addEventListener('click', async () => {
+if (focusToggle) {
+  focusToggle.addEventListener('click', async () => {
     const { focusmate_break_mode = false } = await storageGet('focusmate_break_mode');
     const isOn = !Boolean(focusmate_break_mode);
-    setZenMode(!isOn);
+    setFocusMode(!isOn);
   });
   // Keyboard accessibility
-  zenToggle.addEventListener('keydown', async (e) => {
+  focusToggle.addEventListener('keydown', async (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       const { focusmate_break_mode = false } = await storageGet('focusmate_break_mode');
       const isOn = !Boolean(focusmate_break_mode);
-      setZenMode(!isOn);
+      setFocusMode(!isOn);
     }
   });
 }
-
-// Wire Pomodoro controls
-if (pomoStartPauseBtn) pomoStartPauseBtn.addEventListener('click', () => (pomoRunning ? pausePomodoro() : startPomodoro()));
-if (pomoResetBtn) pomoResetBtn.addEventListener('click', resetPomodoro);
-if (pomoWorkInput) pomoWorkInput.addEventListener('change', () => {
-  if (!pomoRunning && pomoPhase === 'Work') setPomoPhase('Work');
-});
-if (pomoBreakInput) pomoBreakInput.addEventListener('change', () => {
-  if (!pomoRunning && pomoPhase === 'Break') setPomoPhase('Break');
-});
 
 // Wire Tabs
 tabs.forEach(tab => {
@@ -424,19 +530,18 @@ tabs.forEach(tab => {
       content.classList.remove('open');
       content.style.maxHeight = '0px';
     }
-    if (zenToggle) zenToggle.classList.toggle('on', isOn);
-  renderBlocked(Array.isArray(focusmate_blocklist) ? focusmate_blocklist : []);
-  renderTopics(Array.isArray(topics) ? topics : [], focusmate_topic);
+    if (focusToggle) focusToggle.classList.toggle('on', isOn);
+    renderBlocked(Array.isArray(focusmate_blocklist) ? focusmate_blocklist : []);
+    renderTopics(Array.isArray(topics) ? topics : [], focusmate_topic);
+    setupRecommendedSites(); // Setup recommended sites functionality
     updateTimer();
-  updateStartPauseUI();
+    updateStartPauseUI();
 
-    // Initialize Pomodoro defaults
-    if (pomoWorkInput && !pomoWorkInput.value) pomoWorkInput.value = '25';
-    if (pomoBreakInput && !pomoBreakInput.value) pomoBreakInput.value = '5';
-    setPomoPhase('Work');
-    // prepare ticking; not running until user hits Start
-    if (!pomoInterval) pomoInterval = setInterval(tickPomodoro, 1000);
-  updatePomoStartPauseUI();
+    // Initialize Screen Time
+    await updateScreenTime();
+    if (!screenTimeInterval) {
+      screenTimeInterval = setInterval(updateScreenTime, 1000);
+    }
 
     // Activate saved panel or default to timer
     activatePanel(savedPanel || 'panel-timer');
@@ -444,3 +549,15 @@ tabs.forEach(tab => {
     console.warn('Failed to init popup state', e);
   }
 })();
+
+// Cleanup on popup close
+window.addEventListener('beforeunload', async () => {
+  if (screenTimeInterval) {
+    clearInterval(screenTimeInterval);
+  }
+  // Save current site time before closing
+  if (currentHostname) {
+    const timeSpent = Math.floor((Date.now() - siteStartTime) / 1000);
+    await saveSiteTime(currentHostname, timeSpent);
+  }
+});

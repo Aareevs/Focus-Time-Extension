@@ -9,42 +9,50 @@ const STORAGE_KEYS = {
 const DEFAULT_API_KEY = 'YOUR API KEY';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-// Generate a simple circular icon with a centered "Z" and set it as the action icon.
+// Generate a focus-themed icon with a clock design and set it as the action icon.
 // This helps when packaged PNGs lack a visible foreground.
 async function generateAndSetActionIcon() {
   try {
     if (typeof OffscreenCanvas === 'undefined') return;
-    const sizes = [128, 48, 16];
+    const sizes = [16, 32, 48, 128];
     const imageData = {};
-    // Theme colors: black square background and green Z
-    const GREEN = '#10b981';
+    // Theme colors: black background, red 'F'
     const BLACK = '#000000';
+    const RED = '#dc2626';
+    const DARK_GRAY = '#333333';
 
     for (const size of sizes) {
       const canvas = new OffscreenCanvas(size, size);
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, size, size);
 
-      // Draw black square background
+      const center = size / 2;
+
+      // Draw black background
       ctx.fillStyle = BLACK;
       ctx.fillRect(0, 0, size, size);
 
-      // Draw centered green 'Z'
-      const fontSize = Math.floor(size * 0.70); // slightly larger for square
-      ctx.font = `bold ${fontSize}px -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial`;
-      ctx.fillStyle = GREEN;
+      // Draw FOCUS text in red (different layouts for different sizes)
+      ctx.fillStyle = RED;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-
-      // Use TextMetrics to vertically center precisely when available
-      const text = 'Z';
-      const metrics = ctx.measureText(text);
-      const ascent = metrics.actualBoundingBoxAscent ?? fontSize * 0.8;
-      const descent = metrics.actualBoundingBoxDescent ?? fontSize * 0.2;
-      const textHeight = ascent + descent;
-      const y = Math.round((size - textHeight) / 2 + ascent); // center baseline
-      const x = Math.round(size / 2);
-      ctx.fillText(text, x, y);
+      ctx.textBaseline = 'middle';
+      
+      if (size === 16) {
+        // Small size: show just "FO" stacked
+        ctx.font = `bold ${size * 0.25}px Arial`;
+        ctx.fillText('F', size * 0.5, size * 0.35);
+        ctx.fillText('O', size * 0.5, size * 0.65);
+      } else if (size === 48) {
+        // Medium size: show "FOCUS" with "TIME" below
+        ctx.font = `bold ${size * 0.17}px Arial`;
+        ctx.fillText('FOCUS', size * 0.5, size * 0.35);
+        ctx.fillText('TIME', size * 0.5, size * 0.65);
+      } else {
+        // Large size: show "FOCUS" with "TIME" below
+        ctx.font = `bold ${size * 0.16}px Arial`;
+        ctx.fillText('FOCUS', size * 0.5, size * 0.35);
+        ctx.fillText('TIME', size * 0.5, size * 0.65);
+      }
 
       imageData[size] = ctx.getImageData(0, 0, size, size);
     }
@@ -57,7 +65,7 @@ async function generateAndSetActionIcon() {
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
-    [STORAGE_KEYS.BLOCKLIST]: ['youtube.com', 'instagram.com'],
+    [STORAGE_KEYS.BLOCKLIST]: [], // Empty blocklist - no default blocked websites
     [STORAGE_KEYS.API_KEY]: DEFAULT_API_KEY,
     [STORAGE_KEYS.BREAK_MODE]: false,
     [STORAGE_KEYS.TEMP_ALLOW]: {}
@@ -194,7 +202,7 @@ function showBlock(message) {
     padding: '24px',
     boxSizing: 'border-box'
   });
-  const btnStyle = `margin-top:12px;padding:10px 14px;background:#10b981;color:#06281a;border:none;border-radius:10px;cursor:pointer;font-weight:700;`;
+  const btnStyle = `margin-top:12px;padding:10px 14px;background:#dc2626;color:#06281a;border:none;border-radius:10px;cursor:pointer;font-weight:700;`;
   div.innerHTML = `<p style="max-width: 640px; text-align: center;">${message}</p><button id='allow' style="${btnStyle}">Allow 5 min</button>`;
   document.body.appendChild(div);
   document.getElementById('allow').onclick = () => {

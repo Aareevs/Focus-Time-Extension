@@ -1,5 +1,5 @@
 // Content script: relays window messages to background
-console.log('ZEN MODE content script active');
+console.log('FOCUS TIME content script active');
 
 window.addEventListener('message', (event) => {
 	// Only accept messages from the same window context

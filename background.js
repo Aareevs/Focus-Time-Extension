@@ -9,6 +9,28 @@ const STORAGE_KEYS = {
 const DEFAULT_API_KEY = 'YOUR API KEY';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
+// Small promise-based storage helpers to avoid mixing callbacks and await
+function storageGet(keys) {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.get(keys, (res) => resolve(res || {}));
+    } catch (e) {
+      // In some environments chrome may not be available synchronously
+      resolve({});
+    }
+  });
+}
+
+function storageSet(items) {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.set(items, () => resolve());
+    } catch (e) {
+      resolve();
+    }
+  });
+}
+
 // Generate a focus-themed icon with a clock design and set it as the action icon.
 // This helps when packaged PNGs lack a visible foreground.
 async function generateAndSetActionIcon() {
@@ -112,12 +134,12 @@ function pruneTempAllow(map) {
 chrome.webNavigation.onCompleted.addListener(async details => {
   const { url, tabId, frameId } = details;
   if (frameId !== 0) return;
-  const { focusmate_break_mode, focusmate_blocklist, focusmate_topic, focusmate_api_key, focusmate_temp_allow } = await chrome.storage.local.get();
+  const { focusmate_break_mode, focusmate_blocklist, focusmate_topic, focusmate_api_key, focusmate_temp_allow } = await storageGet(null);
   const host = getHostname(url);
   const tempAllow = focusmate_temp_allow || {};
   // Clean expired temp allows
   if (pruneTempAllow(tempAllow)) {
-    chrome.storage.local.set({ [STORAGE_KEYS.TEMP_ALLOW]: tempAllow });
+    await storageSet({ [STORAGE_KEYS.TEMP_ALLOW]: tempAllow });
   }
   // Skip if temporarily allowed
   if (tempAllow[host] && tempAllow[host] > Date.now()) return;
@@ -215,10 +237,11 @@ function showBlock(message) {
 chrome.runtime.onMessage.addListener((msg, _sender, _sendResponse) => {
   if (msg && msg.type === 'ALLOW_DOMAIN' && typeof msg.minutes === 'number' && msg.domain) {
     const minutes = Math.max(1, Math.min(120, Math.floor(msg.minutes)));
-    chrome.storage.local.get(STORAGE_KEYS.TEMP_ALLOW, (data) => {
-      const map = data[STORAGE_KEYS.TEMP_ALLOW] || {};
+    (async () => {
+      const data = await storageGet(STORAGE_KEYS.TEMP_ALLOW);
+      const map = (data && data[STORAGE_KEYS.TEMP_ALLOW]) || {};
       map[msg.domain] = Date.now() + minutes * 60_000;
-      chrome.storage.local.set({ [STORAGE_KEYS.TEMP_ALLOW]: map });
-    });
+      await storageSet({ [STORAGE_KEYS.TEMP_ALLOW]: map });
+    })();
   }
 });
